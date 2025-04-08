@@ -416,7 +416,7 @@ public:
     void _pop_front();
     size_t _size();
     size_t _capacity() const;
-    bool _empty() const;
+    bool _empty();
     T& operator[](int index);
     T& _at(int index);
     void _reserve(int new_capacity);
@@ -520,14 +520,31 @@ size_t _deque<T>::_size() {
 }
 
 
-// template <typename T>
-// size_t _deque<T>::_capacity() const {
-//     return m_capacity - m_data;
-// }
+template <typename T>
+size_t _deque<T>::_capacity() const {
+    return m_dinamic_vector->_capacity() * 6;
+}
+
+template <typename T>
+bool _deque<T>::_empty()  {
+    return _size() == 0;
+}
+
+template <typename T>
+T& _deque<T>::operator[](int index) {
+        return (*m_dinamic_vector)[m_dinamic_vector->m_begin - m_dinamic_vector->m_data + (index / 6)][index % 6];
+}
 
 int main() {
-    _deque<int> deque(13); // Create a deque of integers
+    _deque<int> deque(15); // Create a deque of integers
     std::cout << "Size of deque: " << deque._size() << std::endl;
+    std::cout << "Capacity of deque: " << deque._capacity() << std::endl;
+    std::cout << "Empty?: " << deque._empty() << std::endl;
+    for(int i = 0 ;i < deque._size(); i ++) {
+        deque[i] = i;
+    }
+    std::cout << "[]: " << deque[10] << std::endl;
+
     return 0;
     //deque._size();
     // _dinamic_vector<int> vec1(10);
