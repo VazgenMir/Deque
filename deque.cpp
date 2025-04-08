@@ -155,19 +155,16 @@ _dinamic_vector<T>& _dinamic_vector<T>::operator=(const _dinamic_vector<T>& othe
     if (this == &other) return *this;  // Handle self-assignment
 
     // Clean up the current data
-    delete[] m_data;
-
     // Copy data from 'other'
     m_capacity = other.m_capacity;
     m_begin = other.m_data;
     m_end = other.m_end;
-    size_t size = other._size();
-    m_data = new T[_size()];
+    //m_data = new T[_size()];
 
     // Copy elements from the other vector
-    for (size_t i = 0; i < size; ++i) {
-        m_data[i] = other.m_data[i];
-    }
+    // for (size_t i = 0; i < size; ++i) {
+    //     m_data[i] = other.m_data[i];
+    // }
 
     return *this;
 }
@@ -496,7 +493,6 @@ _deque<T>::_deque(int size) {
     // if(size % 6 > 0) {
     //     (*m_dinamic_vector)[size / 6 + 1] = _dinamic_vector<T>(size % 6);
     // }
-    std::cout << m_dinamic_vector->_size() << std::endl;
 }
 
 template <typename T>
@@ -535,16 +531,86 @@ T& _deque<T>::operator[](int index) {
         return (*m_dinamic_vector)[m_dinamic_vector->m_begin - m_dinamic_vector->m_data + (index / 6)][index % 6];
 }
 
+template <typename T>
+T& _deque<T>::_at(int index) {
+    if(_size() > index) {
+        return (*m_dinamic_vector)[m_dinamic_vector->m_begin - m_dinamic_vector->m_data + (index / 6)][index % 6];
+    } else {
+        std::cerr << "terminate called after throwing an instance of 'std::out_of_range'\n what():  vector::_M_range_check: __n (which is " << index << ") >= this->size() (which is " << index << ")\nAborted (core dumped)"<<std::endl;
+        exit(EXIT_FAILURE);
+    }
+}
+
+template <typename T>
+void _deque<T>::_reserve(int size) {
+    if(size > _capacity()) {
+        int count = m_dinamic_vector->_size();
+        _dinamic_vector<_dinamic_vector<T>>* begin;
+        if(size < 6) {
+            begin = new _dinamic_vector<_dinamic_vector<T>>( 1 );
+        } else if(size % 6 == 0) {
+            begin = new _dinamic_vector<_dinamic_vector<T>>(size / 6);
+        } else {
+            begin = new _dinamic_vector<_dinamic_vector<T>>(size / 6 + 1);
+        }
+
+        int pos = m_dinamic_vector->m_begin - m_dinamic_vector->m_data;
+        for(int i = 0;i < m_dinamic_vector->_size(); i++) {
+            //std::cout << pos << std::endl;
+            //(*begin)[i] = _dinamic_vector<T>(size);
+            //begin[i] = m_dinamic_vector[pos];
+            begin[i].m_data = m_dinamic_vector[pos].m_data;
+            begin[i].m_begin = m_dinamic_vector[pos].m_begin;
+            begin[i].m_end = m_dinamic_vector[pos].m_end;
+            begin[i].m_capacity = m_dinamic_vector[pos].m_capacity;
+            for(int i = 0;i < 6;i++) {
+                std::cout  << i << " : " << (*m_dinamic_vector)[i / 6][i % 6] << " ";
+                  }
+                  std::cout << std::endl;
+                  for(int i = 0;i < 6;i++) {
+                    std::cout  << i << " : " << (*begin)[i / 6][i % 6] << " ";
+                      }
+
+            pos++;
+            if(pos >= m_dinamic_vector->_capacity()) {
+                pos = 0;
+            }
+        }
+        //delete m_dinamic_vector;
+        //m_dinamic_vector = begin;
+        m_dinamic_vector->m_data = begin->m_data;
+        m_dinamic_vector->m_end = m_dinamic_vector->m_data + begin->_size();
+        m_dinamic_vector->m_begin = m_dinamic_vector->m_data;
+        if(size < 6) {
+            m_dinamic_vector->m_capacity = m_dinamic_vector->m_data + 1;
+
+        } else if(size % 6 == 0) {
+            m_dinamic_vector->m_capacity = m_dinamic_vector->m_data + size / 6;
+
+        } else {
+            m_dinamic_vector->m_capacity = m_dinamic_vector->m_data + size / 6 + 1;
+
+        }
+        //  m_dinamic_vector->m_data = begin->m_data;
+        //  m_dinamic_vector->m_begin = m_dinamic_vector->m_data;
+        //   m_dinamic_vector->m_end = m_dinamic_vector->m_data + count;
+        //   m_dinamic_vector->m_capacity = m_dinamic_vector->m_data + 3; 
+          //std::cout << begin->_size() << std::endl;
+    }
+}
+
 int main() {
     _deque<int> deque(15); // Create a deque of integers
-    std::cout << "Size of deque: " << deque._size() << std::endl;
-    std::cout << "Capacity of deque: " << deque._capacity() << std::endl;
-    std::cout << "Empty?: " << deque._empty() << std::endl;
     for(int i = 0 ;i < deque._size(); i ++) {
         deque[i] = i;
     }
+    deque._reserve(25);
+    std::cout << "Size of deque: " << deque._size() << std::endl;
+    std::cout << "Capacity of deque: " << deque._capacity() << std::endl;
+    std::cout << "Empty?: " << deque._empty() << std::endl;
+    
     std::cout << "[]: " << deque[10] << std::endl;
-
+    //std::cout << "at: " << deque._at(10) << std::endl;
     return 0;
     //deque._size();
     // _dinamic_vector<int> vec1(10);
