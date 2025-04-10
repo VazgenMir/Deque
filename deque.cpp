@@ -84,9 +84,9 @@ public:
 
 template <typename T>
 _dinamic_vector<T>::_dinamic_vector() {
-    m_data = new T[0];
+    m_data = new T[6];
     m_begin = m_data;
-    m_end = m_data;
+    m_end = m_data + 6;
     m_capacity = m_end;
 }
 
@@ -107,11 +107,18 @@ _dinamic_vector<T>::_dinamic_vector(int size) {
     //         i *= 2;
     //     }
     // }
-    m_data = new T[size]; 
-    m_capacity = m_data + size;
+    if(size < 6) {
+        m_data = new T[6]; 
+        m_capacity = m_data + 6;
+    } else {
+        m_data = new T[size];
+        m_capacity = m_data + size;
+    } 
+    
 
     m_begin = m_data;
     m_end = m_data + size;
+
 }
 
 template <typename T>
@@ -159,17 +166,17 @@ _dinamic_vector<T>::~_dinamic_vector() {
 template <typename T>
 _dinamic_vector<T>& _dinamic_vector<T>::operator=(const _dinamic_vector<T>& other) {
     if (this->m_data) {
-        delete[] this->m_data;
+        //delete[] this->m_data;
     }
 
-    size_t n = other._size();
+    size_t n = other._capacity();
     m_data = new T[n];
-    for (size_t i = 0; i < n; ++i)
+    for (size_t i = 0; i < other._size(); ++i)
         m_data[i] = other[i];
 
     m_begin = m_data;
-    m_end = m_data + n;
-    m_capacity = m_end;
+    m_end = m_data + other._size();
+    m_capacity = m_data + n;
 
     return *this;
 }
@@ -288,7 +295,7 @@ T& _dinamic_vector<T>::_at(int index) {
 template <typename T>
 void _dinamic_vector<T>::_push_back(const T& value) {
     if(_size() + 1 <= _capacity()) {
-        int* pos = m_end + 1;
+        T* pos = m_end + 1;
         if(pos <= m_capacity) {
             m_data[_size()] = value;
             m_end++;
@@ -329,7 +336,7 @@ void _dinamic_vector<T>::_pop_back() {
 template <typename T>
 void _dinamic_vector<T>::_push_front(const T& value) {
     if(_size() + 1 <= _capacity()) {
-        int* pos = m_begin - 1;
+        T* pos = m_begin - 1;
         if(pos >= m_data) {
             m_data[m_begin - m_data - 1] = value;
             m_begin--;
@@ -503,7 +510,8 @@ _deque<T>::_deque(int size) {
         (*m_dinamic_vector)[i] = _dinamic_vector<T>(6);
         //std::cout << (*m_dinamic_vector)[i]._capacity() << std::endl;
         if(size % 6 > 0 && i + 1 == size / 6) {
-            (*m_dinamic_vector)[i + 1] = _dinamic_vector<T>(6);
+            (*m_dinamic_vector)[i + 1] = _dinamic_vector<T>(size % 6);
+            std::cout << (*m_dinamic_vector)[i + 1].m_capacity - (*m_dinamic_vector)[i + 1].m_data << std::endl;
         }
     }
     // if(size % 6 > 0) {
@@ -576,7 +584,7 @@ T& _deque<T>::_at(int index) {
 template <typename T>
 void _deque<T>::_print() {
     for(int i = 0;i < m_dinamic_vector->_size();i++) {
-        for(int j = 0;j < (*m_dinamic_vector)[i]._size();j++) {
+        for(int j = 0;j < (*m_dinamic_vector)[i]._capacity();j++) {
             std::cout <<  (*m_dinamic_vector)[i][j] << " ";
         }
         std::cout << std::endl;
@@ -688,19 +696,61 @@ void _deque<T>::_pop_back() {
 
 }
 
+template <typename T>
+void _deque<T>::_push_back(const T& value) {
+    if((*m_dinamic_vector)[m_dinamic_vector->_size() - 1]._size() == 6){
+        if(m_dinamic_vector->_capacity() == m_dinamic_vector->_size()) {
+            _reserve(_capacity() * 2);
+        }
+        (*m_dinamic_vector)._push_back(_dinamic_vector<T>(1));
+
+        (*m_dinamic_vector)[m_dinamic_vector->_size() - 1][0] = value;
+        
+        return;
+    }
+   
+    (*m_dinamic_vector)[m_dinamic_vector->_size() - 1]._push_back(value);
+}
+
+template <typename T>
+void _deque<T>::_push_front(const T& value) {
+    if((*m_dinamic_vector)[0]._size() == 6){
+        if(m_dinamic_vector->_capacity() == m_dinamic_vector->_size()) {
+            _reserve(_capacity() * 2);
+        }
+        (*m_dinamic_vector)._push_front(_dinamic_vector<T>(1));
+
+        (*m_dinamic_vector)[0][0] = value;
+        
+        return;
+    }
+   
+    (*m_dinamic_vector)[0]._push_front(value);
+}
+
 int main() {
-    _deque<int> deque(100); 
+    _deque<int> deque(141); 
     for(int i = 0 ;i < deque._size(); i ++) {
         deque[i] = i;
 
     }
-    for(int i = 0 ;i < deque._size() / 2; i ++) {
-        deque._pop_front();
+    // for(int i = 0 ;i < deque._size() / 2; i ++) {
+    //     deque._pop_front();
 
-    }
+    // }
     std::cout << "index:" << deque[0] << std::endl;
     std::cout << "index:" << deque[10] << std::endl;
-     deque._print();
+    deque._print();
+ //deque._pop_front();
+    deque._push_back(5);
+     deque._push_back(5);
+     deque._push_back(5);
+     deque._push_back(5);
+     deque._push_front(5);
+     deque._push_front(5);
+     deque._push_front(5);
+     deque._push_front(5);
+     
     // std::cout << "Capacity of deque: " << deque._capacity() << std::endl;
 
     // std::cout << std::endl;
@@ -711,7 +761,11 @@ int main() {
     // deque._pop_front();
     // deque._pop_front();
     // deque._pop_front();
-    //  deque._pop_back();
+    //   deque._pop_back();
+    //   deque._pop_back();
+    //   deque._pop_back();
+      std::cout << std::endl;
+      deque._print();
     //  deque._pop_back();
     //  deque._pop_back();
     //  deque._pop_back();
