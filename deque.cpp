@@ -315,14 +315,15 @@ void _dinamic_vector<T>::_push_back(const T& value) {
 
 template <typename T>
 void _dinamic_vector<T>::_pop_back() {
-    int* pos = m_end - 1;
-    if(pos >= m_data) {
+    T* pos = m_end - 1;
+    //if(pos >= m_data) {
         m_data[_size() - 1] = 0;
         m_end--;
-     } else {
-        m_data[_capacity() - 1] = 0;
-        m_end = m_capacity;
-     }
+        std::cout << _size() << std::endl;
+    //  } else {
+    //     m_data[_capacity() - 1] = 0;
+    //     m_end = m_capacity;
+    //  }
 }
 
 template <typename T>
@@ -355,8 +356,8 @@ void _dinamic_vector<T>::_push_front(const T& value) {
 
 template <typename T>
 void _dinamic_vector<T>::_pop_front() {
-    int* pos = m_begin + 1;
-    if(pos <= m_capacity) {
+    T* pos = m_begin + 1;
+    if(pos < m_capacity) {
         m_data[m_begin - m_data] = 0;
         m_begin++;
      } else {
@@ -521,11 +522,11 @@ size_t _deque<T>::_size() {
     if(m_dinamic_vector->_size() == 0) {
         return 0;
     } else if (m_dinamic_vector->_size() == 1) {
-        size = (*m_dinamic_vector)[m_dinamic_vector->m_begin - m_dinamic_vector->m_data]._size();
+        size = (*m_dinamic_vector)[0]._size();
     } else {
          size = (m_dinamic_vector->_size() - 2) * 6;
-         size += (*m_dinamic_vector)[m_dinamic_vector->m_begin - m_dinamic_vector->m_data]._size();
-         size += (*m_dinamic_vector)[m_dinamic_vector->m_end - m_dinamic_vector->m_data - 1]._size();
+         size += (*m_dinamic_vector)[0]._size();
+         size += (*m_dinamic_vector)[m_dinamic_vector->_size() - 1]._size();
     }
     return size;
 }
@@ -533,19 +534,14 @@ size_t _deque<T>::_size() {
 
 template <typename T>
 size_t _deque<T>::_capacity() const {
-    size_t size = 0;
-    for(int i = 0;i < m_dinamic_vector->_capacity();i++) {
-        size = (*m_dinamic_vector)[i]._capacity();
-        
-    }
     //return size;
-    if(m_dinamic_vector->_capacity() == 1) {
-        return (*m_dinamic_vector)[0]._capacity();
-    } else if(m_dinamic_vector->_capacity() == 2) {
-        return (*m_dinamic_vector)[0]._capacity() + m_dinamic_vector[1]._capacity();
-    } else if(m_dinamic_vector->_capacity() > 2) {
-        return (m_dinamic_vector->_capacity() - 2) * 6 + (*m_dinamic_vector)[0]._capacity() + (*m_dinamic_vector)[m_dinamic_vector->_size() - 1]._capacity();
-    }
+    // if(m_dinamic_vector->_capacity() == 1) {
+    //     return (*m_dinamic_vector)[0]._capacity();
+    // } else if(m_dinamic_vector->_capacity() == 2) {
+    //     return (*m_dinamic_vector)[0]._capacity() + m_dinamic_vector[1]._capacity();
+    // } else if(m_dinamic_vector->_capacity() > 2) {
+    //     return (m_dinamic_vector->_capacity() - 2) * 6 + (*m_dinamic_vector)[0]._capacity() + (*m_dinamic_vector)[m_dinamic_vector->_size() - 1]._capacity();
+    // }
     return m_dinamic_vector->_capacity() * 6;
 }
 
@@ -556,12 +552,20 @@ bool _deque<T>::_empty()  {
 
 template <typename T>
 T& _deque<T>::operator[](int index) {
+    if(index >(*m_dinamic_vector)[0]._size()) {
+        int size = index - (*m_dinamic_vector)[0]._size();                 
+        return (*m_dinamic_vector)[size / 6 + 1][size % 6];                
+    }                                                                      
         return (*m_dinamic_vector)[index / 6][index % 6];
 }
 
 template <typename T>
 T& _deque<T>::_at(int index) {
     if(_size() > index) {
+        if(index >(*m_dinamic_vector)[0]._size()) {
+        int size = index - (*m_dinamic_vector)[0]._size();
+        return (*m_dinamic_vector)[size / 6 + 1][size % 6];
+    }
         return (*m_dinamic_vector)[index / 6][index % 6];
     } else {
         std::cerr << "terminate called after throwing an instance of 'std::out_of_range'\n what():  vector::_M_range_check: __n (which is " << index << ") >= this->size() (which is " << index << ")\nAborted (core dumped)"<<std::endl;
@@ -632,27 +636,97 @@ T& _deque<T>::_back() {
     return (*this)[_size() - 1];
 }
 
+template <typename T>
+typename _deque<T>::_iterator _deque<T>::_begin() {
+    return _iterator((*m_dinamic_vector)[0].m_begin);
+}
+
+template <typename T>
+typename _deque<T>::_iterator _deque<T>::_end() {
+    return _iterator((*m_dinamic_vector)[m_dinamic_vector->_size() - 1].m_end);
+}
+
+template <typename T>
+typename _deque<T>::_reverse_iterator _deque<T>::_rbegin() {
+    if((*m_dinamic_vector)[m_dinamic_vector->_size() - 1].m_end != (*m_dinamic_vector)[m_dinamic_vector->_size() - 1].m_data) {
+        return _reverse_iterator((*m_dinamic_vector)[m_dinamic_vector->_size() - 1].m_end - 1);
+    } else {
+        return _reverse_iterator((*m_dinamic_vector)[m_dinamic_vector->_size() - 1].m_capacity - 1);
+    }
+}
+
+template <typename T>
+typename _deque<T>::_reverse_iterator _deque<T>::_rend() {
+    if((*m_dinamic_vector)[0].m_begin != (*m_dinamic_vector)[0].m_data) {
+        return _reverse_iterator((*m_dinamic_vector)[0].m_begin - 1);
+    } else {
+        return _reverse_iterator((*m_dinamic_vector)[0].m_capacity - 1);
+    }
+}
+
+template <typename T>
+void _deque<T>::_pop_front() {
+    if((*m_dinamic_vector)[0]._size() == 1){
+        (*m_dinamic_vector)[0]._pop_front();
+        (*m_dinamic_vector)._pop_front();
+        return;
+    }
+    (*m_dinamic_vector)[0]._pop_front();
+
+}
+
+template <typename T>
+void _deque<T>::_pop_back() {
+    if((*m_dinamic_vector)[m_dinamic_vector->_size() - 1]._size() == 1){
+        (*m_dinamic_vector)[m_dinamic_vector->_size() - 1]._pop_back();
+        (*m_dinamic_vector)._pop_back();
+        
+        return;
+    }
+    std::cout << m_dinamic_vector->_size() << std::endl;
+    (*m_dinamic_vector)[m_dinamic_vector->_size() - 1]._pop_back();
+
+}
+
 int main() {
-    _deque<int> deque(20); 
+    _deque<int> deque(100); 
     for(int i = 0 ;i < deque._size(); i ++) {
-        deque[i] = i+1;
+        deque[i] = i;
 
     }
+    for(int i = 0 ;i < deque._size() / 2; i ++) {
+        deque._pop_front();
 
-    deque._print();
-    std::cout << "Capacity of deque: " << deque._capacity() << std::endl;
+    }
+    std::cout << "index:" << deque[0] << std::endl;
+    std::cout << "index:" << deque[10] << std::endl;
+     deque._print();
+    // std::cout << "Capacity of deque: " << deque._capacity() << std::endl;
 
-    std::cout << std::endl;
-    deque._reserve(40);
-    //deque._clear();
-    deque._print();
-    std::cout << "Size of deque: " << deque._size() << std::endl;
-    std::cout << "Capacity of deque: " << deque._capacity() << std::endl;
-    std::cout << "Empty?: " << deque._empty() << std::endl;
+    // std::cout << std::endl;
+    // deque._reserve(40);
+    // deque._pop_front();
+    // deque._pop_front();
+    // deque._pop_front();
+    // deque._pop_front();
+    // deque._pop_front();
+    // deque._pop_front();
+    //  deque._pop_back();
+    //  deque._pop_back();
+    //  deque._pop_back();
+    //  deque._pop_back();
+    //  deque._pop_back();
+    //  deque._pop_back();
+    // deque._print();
+    // _deque<int>::_reverse_iterator it = deque._rend();
+    // std::cout << "iterator: " << *it << std::endl;
+    // std::cout << "Size of deque: " << deque._size() << std::endl;
+    // std::cout << "Capacity of deque: " << deque._capacity() << std::endl;
+    // std::cout << "Empty?: " << deque._empty() << std::endl;
     
-    std::cout << "[]: " << deque[12] << std::endl;
-    std::cout << "front: " << deque._front() << std::endl;
-    std::cout << "back: " << deque._back() << std::endl;
-    std::cout << "at: " << deque._at(10) << std::endl;
+    // std::cout << "[]: " << deque[12] << std::endl;
+    // std::cout << "front: " << deque._front() << std::endl;
+    // std::cout << "back: " << deque._back() << std::endl;
+    // std::cout << "at: " << deque._at(10) << std::endl;
     return 0;
 }
